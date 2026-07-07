@@ -3,16 +3,12 @@ import { MapContainer, TileLayer, Polyline, Marker, useMap } from 'react-leaflet
 import { useEffect } from 'react'
 import L from 'leaflet'
 
-// Fix untuk masalah ikon marker Leaflet yang hilang saat di-deploy (Vite production)
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
-import markerIcon from 'leaflet/dist/images/marker-icon.png'
-import markerShadow from 'leaflet/dist/images/marker-shadow.png'
-
+// Fix 100% ampuh untuk ikon marker Leaflet di Vercel
 delete L.Icon.Default.prototype._getIconUrl
 L.Icon.Default.mergeOptions({
-  iconUrl: markerIcon,
-  iconRetinaUrl: markerIcon2x,
-  shadowUrl: markerShadow,
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 })
 
 // Komponen mini untuk otomatis mengarahkan kamera peta ke tengah rute
