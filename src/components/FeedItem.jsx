@@ -55,7 +55,11 @@ export default function FeedItem({ act, onClick, formatDuration }) {
       setHasLiked(false)
     } else {
       // Like
-      await supabase.from('kudos').insert([{ activity_id: act.id, user_id: user.id }])
+      await supabase.from('kudos').insert([{ 
+        activity_id: act.id, 
+        user_id: user.id,
+        user_full_name: user?.user_metadata?.full_name || 'Pengguna Strava Clone'
+      }])
       setLikes(p => p + 1)
       setHasLiked(true)
     }

@@ -2,9 +2,9 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabaseClient'
-import { LogOut, Plus, Activity, Users, User } from 'lucide-react'
+import { LogOut, Plus, Activity, Users, User, Download } from 'lucide-react'
 import RecordModal from '../components/RecordModal'
-import DetailModal from '../components/DetailModal' // 1. IMPORT DETAIL MODAL BARU
+import DetailModal from '../components/DetailModal' 
 import FeedItem from '../components/FeedItem'
 
 export default function Dashboard() {
@@ -13,10 +13,12 @@ export default function Dashboard() {
   const [activities, setActivities] = useState([])
   const [loading, setLoading] = useState(true)
   
-  // 2. STATE UNTUK DETAIL MODAL
+  // State untuk PWA Install Prompt
+  const [deferredPrompt, setDeferredPrompt] = useState(null)
+  
   const [selectedActivity, setSelectedActivity] = useState(null)
   const [isDetailOpen, setIsDetailOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState('global') // 'global' atau 'me'
+  const [activeTab, setActiveTab] = useState('global') 
   
   const fullName = user?.user_metadata?.full_name || 'Pelari Tangguh'
 
@@ -44,6 +46,28 @@ export default function Dashboard() {
     if (user) { fetchActivities() }
   }, [user, activeTab])
 
+  // Menangkap event install PWA dari browser
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      // Mencegah browser memunculkan popup otomatis secara langsung
+      e.preventDefault()
+      // Simpan event-nya agar bisa dipanggil saat tombol diklik
+      setDeferredPrompt(e)
+    }
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+  }, [])
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return
+    deferredPrompt.prompt()
+    const { outcome } = await deferredPrompt.userChoice
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null)
+    }
+  }
+
   const formatDuration = (seconds) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
@@ -56,7 +80,15 @@ export default function Dashboard() {
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <h1 className="text-2xl font-black tracking-tight text-orange-600">STRAVA KLON</h1>
           <div className="flex items-center gap-4">
-            <span className="text-sm font-medium text-gray-700">Halo, {fullName}</span>
+            {deferredPrompt && (
+              <button 
+                onClick={handleInstallClick} 
+                className="flex items-center gap-1.5 rounded-full bg-black px-4 py-1.5 text-sm font-semibold text-white shadow-md hover:bg-gray-800 cursor-pointer animate-pulse"
+              >
+                <Download size={16} /> Install App
+              </button>
+            )}
+            <span className="text-sm font-medium text-gray-700 hidden sm:inline">Halo, {fullName}</span>
             <button onClick={logout} className="flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">
               <LogOut size={16} /> Keluar
             </button>

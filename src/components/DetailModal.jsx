@@ -61,7 +61,8 @@ export default function DetailModal({ isOpen, onClose, activity }) {
         .insert([{ 
           activity_id: activity.id, 
           user_id: user.id, 
-          content: newComment 
+          content: newComment,
+          user_full_name: user?.user_metadata?.full_name || 'Pengguna Strava Clone'
         }])
         .select()
 
@@ -148,8 +149,9 @@ export default function DetailModal({ isOpen, onClose, activity }) {
                 ) : (
                   comments.map(c => (
                     <div key={c.id} className="bg-gray-50 p-3 rounded-xl">
-                      <p className="text-sm text-gray-800">{c.content}</p>
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs font-bold text-gray-700">{c.user_full_name || 'Pengguna Anonim'}</p>
+                      <p className="text-sm text-gray-800 mt-0.5">{c.content}</p>
+                      <p className="text-[10px] text-gray-400 mt-1">
                         {new Date(c.created_at).toLocaleString('id-ID')}
                       </p>
                     </div>

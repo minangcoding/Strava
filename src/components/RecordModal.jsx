@@ -11,6 +11,7 @@ export default function RecordModal({ isOpen, onClose, onRefresh }) {
   const [type, setType] = useState('run')
   const [distance, setDistance] = useState(0) // km asli
   const [duration, setDuration] = useState(0) // detik asli
+  const [elevationGain, setElevationGain] = useState(0) // elevasi asli
   const [isRecording, setIsRecording] = useState(false)
   const [isPaused, setIsPaused] = useState(false)
   const [coordinates, setCoordinates] = useState([])
@@ -60,13 +61,16 @@ export default function RecordModal({ isOpen, onClose, onRefresh }) {
     setCoordinates([])
     setDistance(0)
     setDuration(0)
+    setElevationGain(0)
 
     // Mulai memperhatikan perubahan posisi user secara real-time
     watchRef.current = navigator.geolocation.watchPosition(
       (position) => {
         if (isPausedRef.current) return; // Jangan catat jika di-pause
-        const { latitude, longitude } = position.coords
-        const newCoord = [latitude, longitude]
+        // Ambil altitude (ketinggian) dari GPS HP. Jika di laptop biasanya null.
+        const { latitude, longitude, altitude } = position.coords
+        const currentAltitude = altitude || 0
+        const newCoord = [latitude, longitude, currentAltitude]
 
         setCoordinates((prevCoords) => {
           if (prevCoords.length > 0) {
@@ -74,6 +78,12 @@ export default function RecordModal({ isOpen, onClose, onRefresh }) {
             // Hitung tambahan jarak dari titik terakhir
             const addedDist = calculateDistance(lastCoord[0], lastCoord[1], latitude, longitude)
             setDistance((prevDist) => parseFloat((prevDist + addedDist).toFixed(2)))
+
+            // Hitung tambahan elevasi (hanya dihitung jika menanjak)
+            const altDiff = currentAltitude - (lastCoord[2] || 0)
+            if (altDiff > 0) {
+              setElevationGain((prev) => prev + altDiff)
+            }
           }
           return [...prevCoords, newCoord]
         })
@@ -120,7 +130,7 @@ export default function RecordModal({ isOpen, onClose, onRefresh }) {
             activity_type: type,
             distance: distance,
             duration: duration,
-            elevation_gain: 0, // Untuk elevasi asli butuh API maps tambahan, kita set 0 dulu
+            elevation_gain: Math.round(elevationGain), // Menggunakan data elevasi asli
             start_time: new Date().toISOString()
           }
         ])

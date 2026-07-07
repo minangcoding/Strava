@@ -3,14 +3,11 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 
 export default function PerformanceChart({ coordinates }) {
   // Mengubah data koordinat GPS menjadi format data grafik
-  // Karena mock data kita hanya [lat, lng], kita buat simulasi jarak (X) dan elevasi (Y)
   const chartData = coordinates.map((coord, index) => {
     return {
       titik: `Titik ${index + 1}`,
-      // Simulasi elevasi acak naik turun antara 10m - 40m
-      Elevasi: Math.floor(Math.sin(index) * 15) + 25, 
-      // Simulasi kecepatan stabil dengan sedikit fluktuasi
-      Kecepatan: parseFloat((10 + Math.cos(index) * 2).toFixed(1))
+      // Ambil data elevasi asli dari sensor GPS (index ke-2 dari array koordinat)
+      Elevasi: Math.round(coord[2] || 0)
     }
   })
 

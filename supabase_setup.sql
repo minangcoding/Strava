@@ -48,3 +48,7 @@ CREATE POLICY "Semua orang bisa melihat aktivitas" ON activities FOR SELECT USIN
 
 -- 4. Tambahkan kolom user_full_name ke tabel activities
 ALTER TABLE activities ADD COLUMN IF NOT EXISTS user_full_name text;
+
+-- 5. Tambahkan kolom user_full_name ke tabel kudos & comments agar nama user bisa ditampilkan
+ALTER TABLE kudos ADD COLUMN IF NOT EXISTS user_full_name text;
+ALTER TABLE comments ADD COLUMN IF NOT EXISTS user_full_name text;
