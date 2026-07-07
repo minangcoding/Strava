@@ -1,0 +1,17 @@
+@import "tailwindcss";
+/* Tambahkan import CSS Leaflet di bawah ini */
+@import "leaflet/dist/leaflet.css";
+
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+}
+
+
+@import "tailwindcss";
+
+/* Agar peta Leaflet nanti muncul dengan benar */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+}
