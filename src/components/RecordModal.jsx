@@ -156,6 +156,8 @@ export default function RecordModal({ isOpen, onClose, onRefresh }) {
     }
   }, [])
 
+  if (!isOpen) return null;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
       <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl">
