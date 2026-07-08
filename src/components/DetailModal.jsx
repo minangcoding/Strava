@@ -1,12 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import { X, Calendar, Clock, Navigation, Send, Share2 } from 'lucide-react'
 import ActivityMap from './ActivityMap'
 import PerformanceChart from './PerformanceChart'
+import html2canvas from 'html2canvas'
 
 export default function DetailModal({ isOpen, onClose, activity }) {
   const { user } = useAuth()
+  const modalRef = useRef(null)
+  const [isSharing, setIsSharing] = useState(false)
   const [routeCoordinates, setRouteCoordinates] = useState([])
   const [loading, setLoading] = useState(false)
   
@@ -81,25 +84,51 @@ export default function DetailModal({ isOpen, onClose, activity }) {
   }
 
   const handleShare = async () => {
-    const shareText = `🏃 ${activity.title}
-📏 Jarak: ${activity.distance} km
-⏱ Waktu: ${formatDuration(activity.duration)}
-📈 Elevasi: ${activity.elevation_gain} m
-
-Direkam via Strava Klon 💪`
+    if (!modalRef.current) return
+    setIsSharing(true)
     
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: activity.title,
-          text: shareText,
-        })
-      } catch (err) {
-        console.log('Batal membagikan')
-      }
-    } else {
-      navigator.clipboard.writeText(shareText)
-      alert('Teks disalin ke clipboard! Silakan paste di WhatsApp/Instagram.')
+    const shareText = `🏃 ${activity.title}\n📏 Jarak: ${activity.distance} km\n⏱ Waktu: ${formatDuration(activity.duration)}\n📈 Elevasi: ${activity.elevation_gain} m\n\nDirekam via Strava Klon 💪`
+    
+    try {
+      // Tunggu sebentar agar tombol 'Share' disembunyikan dari DOM sebelum screenshot
+      await new Promise(resolve => setTimeout(resolve, 150))
+      
+      const canvas = await html2canvas(modalRef.current, {
+        useCORS: true,       // Penting untuk map Leaflet (OpenStreetMap)
+        allowTaint: true,
+        scale: 2,            // Resolusi tinggi (Retina)
+        backgroundColor: '#ffffff'
+      })
+      
+      canvas.toBlob(async (blob) => {
+        const file = new File([blob], `Strava-${activity.title}.png`, { type: 'image/png' })
+        
+        // Cek apakah browser HP support kirim file gambar langsung
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              title: activity.title,
+              text: shareText,
+              files: [file]
+            })
+          } catch (err) {
+            console.log('Batal membagikan')
+          }
+        } else {
+          // Fallback untuk browser Laptop/PC: Langsung download gambarnya
+          const link = document.createElement('a')
+          link.download = `Strava-${activity.title}.png`
+          link.href = canvas.toDataURL('image/png')
+          link.click()
+          
+          navigator.clipboard.writeText(shareText)
+          alert('Peta dan Statistik berhasil didownload sebagai Gambar!\n\nTeks juga telah disalin ke clipboard, siap di-paste ke Instagram/WhatsApp.')
+        }
+        setIsSharing(false)
+      }, 'image/png')
+    } catch (err) {
+      alert('Gagal membuat gambar: ' + err.message)
+      setIsSharing(false)
     }
   }
 
@@ -107,28 +136,37 @@ Direkam via Strava Klon 💪`
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
-      <div className="w-full max-w-3xl rounded-2xl bg-white p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-          <div>
-            <span className="inline-flex items-center rounded-md bg-orange-50 px-2 py-0.5 text-xs font-medium text-orange-700 ring-1 ring-inset ring-orange-700/10">
-              {activity.activity_type === 'run' ? '🏃 Lari' : '🚴 Sepeda'}
-            </span>
-            <h3 className="text-xl font-bold mt-1">{activity.title}</h3>
-            <p className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
-              <Calendar size={12} />
-              {new Date(activity.start_time).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-            </p>
+      <div className="w-full max-w-3xl rounded-2xl bg-white shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div ref={modalRef} className="p-6 bg-white rounded-2xl">
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+            <div>
+              <span className="inline-flex items-center rounded-md bg-orange-50 px-2 py-0.5 text-xs font-medium text-orange-700 ring-1 ring-inset ring-orange-700/10">
+                {activity.activity_type === 'run' ? '🏃 Lari' : '🚴 Sepeda'}
+              </span>
+              <h3 className="text-xl font-bold mt-1">{activity.title}</h3>
+              <p className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
+                <Calendar size={12} />
+                {new Date(activity.start_time).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {!isSharing ? (
+                <>
+                  <button onClick={handleShare} className="text-gray-500 hover:text-orange-600 cursor-pointer p-2 rounded-full hover:bg-orange-50 transition-colors" title="Bagikan ke Sosmed">
+                    <Share2 size={20} />
+                  </button>
+                  <button onClick={onClose} className="text-gray-400 hover:text-gray-600 cursor-pointer p-2 rounded-full hover:bg-gray-50 transition-colors">
+                    <X size={20} />
+                  </button>
+                </>
+              ) : (
+                <span className="text-xs font-bold text-orange-600 animate-pulse bg-orange-50 px-2 py-1 rounded-md border border-orange-200">
+                  📸 Menyimpan...
+                </span>
+              )}
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button onClick={handleShare} className="text-gray-500 hover:text-orange-600 cursor-pointer p-2 rounded-full hover:bg-orange-50 transition-colors" title="Bagikan ke Sosmed">
-              <Share2 size={20} />
-            </button>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600 cursor-pointer p-2 rounded-full hover:bg-gray-50 transition-colors">
-              <X size={20} />
-            </button>
-          </div>
-        </div>
 
         {/* Konten Utama */}
         {loading ? (
@@ -202,7 +240,7 @@ Direkam via Strava Klon 💪`
               </form>
             </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   )
