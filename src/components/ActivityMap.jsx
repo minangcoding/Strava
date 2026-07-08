@@ -11,12 +11,13 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 })
 
-// Komponen mini untuk otomatis mengarahkan kamera peta ke tengah rute
+// Komponen mini untuk otomatis menyesuaikan zoom kamera agar seluruh rute terlihat
 function RecenterMap({ positions }) {
   const map = useMap()
   useEffect(() => {
     if (positions && positions.length > 0) {
-      map.setView(positions[0], 14)
+      const bounds = L.latLngBounds(positions)
+      map.fitBounds(bounds, { padding: [30, 30] })
     }
   }, [positions, map])
   return null
@@ -28,9 +29,24 @@ export default function ActivityMap({ positions }) {
   const hasRoute = positions && positions.length > 0
   const center = hasRoute ? positions[0] : defaultCenter
 
+  // Custom icon ala Strava (Hijau untuk Start, Hitam untuk Finish)
+  const startIcon = L.divIcon({
+    className: 'bg-transparent',
+    html: `<div class="w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow-md"></div>`,
+    iconSize: [16, 16],
+    iconAnchor: [8, 8]
+  })
+
+  const endIcon = L.divIcon({
+    className: 'bg-transparent',
+    html: `<div class="w-4 h-4 bg-black rounded-full border-2 border-white shadow-md"></div>`,
+    iconSize: [16, 16],
+    iconAnchor: [8, 8]
+  })
+
   return (
-    <div className="h-72 w-full overflow-hidden rounded-xl border border-gray-200 shadow-inner">
-      <MapContainer center={center} zoom={13} scrollWheelZoom={false}>
+    <div className="h-72 w-full overflow-hidden rounded-xl border border-gray-200 shadow-inner z-0">
+      <MapContainer center={center} zoom={13} scrollWheelZoom={false} className="h-full w-full">
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -38,8 +54,10 @@ export default function ActivityMap({ positions }) {
         {hasRoute && (
           <>
             <Polyline positions={positions} color="rgb(234, 88, 12)" weight={4} />
-            <Marker position={positions[0]} />
-            <Marker position={positions[positions.length - 1]} />
+            <Marker position={positions[0]} icon={startIcon} />
+            {positions.length > 1 && (
+              <Marker position={positions[positions.length - 1]} icon={endIcon} />
+            )}
             <RecenterMap positions={positions} />
           </>
         )}
