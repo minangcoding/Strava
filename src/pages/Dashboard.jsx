@@ -46,12 +46,17 @@ export default function Dashboard() {
     if (user) { fetchActivities() }
   }, [user, activeTab])
 
+  const [isStandalone, setIsStandalone] = useState(false)
+
   // Menangkap event install PWA dari browser
   useEffect(() => {
+    // Cek apakah sudah diinstal (standalone mode)
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setIsStandalone(true)
+    }
+
     const handleBeforeInstallPrompt = (e) => {
-      // Mencegah browser memunculkan popup otomatis secara langsung
       e.preventDefault()
-      // Simpan event-nya agar bisa dipanggil saat tombol diklik
       setDeferredPrompt(e)
     }
 
@@ -60,11 +65,15 @@ export default function Dashboard() {
   }, [])
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt) return
-    deferredPrompt.prompt()
-    const { outcome } = await deferredPrompt.userChoice
-    if (outcome === 'accepted') {
-      setDeferredPrompt(null)
+    if (deferredPrompt) {
+      deferredPrompt.prompt()
+      const { outcome } = await deferredPrompt.userChoice
+      if (outcome === 'accepted') {
+        setDeferredPrompt(null)
+      }
+    } else {
+      // Fallback jika browser menolak memunculkan prompt (seperti di iOS atau Chrome Incognito)
+      alert("Cara Manual Menginstal Aplikasi:\n\n📱 Di Android (Chrome):\nKetuk ikon 3 titik di pojok kanan atas, lalu pilih 'Tambahkan ke Layar Utama' (Add to Home screen).\n\n🍎 Di iPhone (Safari):\nKetuk tombol Share (Bagikan) di bagian bawah layar, lalu pilih 'Tambahkan ke Layar Utama'.")
     }
   }
 
@@ -80,7 +89,7 @@ export default function Dashboard() {
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <h1 className="text-2xl font-black tracking-tight text-orange-600">STRAVA KLON</h1>
           <div className="flex items-center gap-4">
-            {deferredPrompt && (
+            {!isStandalone && (
               <button 
                 onClick={handleInstallClick} 
                 className="flex items-center gap-1.5 rounded-full bg-black px-4 py-1.5 text-sm font-semibold text-white shadow-md hover:bg-gray-800 cursor-pointer animate-pulse"
