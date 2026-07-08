@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
-import { X, Calendar, Clock, Navigation, Send } from 'lucide-react'
+import { X, Calendar, Clock, Navigation, Send, Share2 } from 'lucide-react'
 import ActivityMap from './ActivityMap'
 import PerformanceChart from './PerformanceChart'
 
@@ -74,13 +74,36 @@ export default function DetailModal({ isOpen, onClose, activity }) {
     }
   }
 
-  if (!isOpen || !activity) return null
-
   const formatDuration = (seconds) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
     return `${mins}:${secs < 10 ? '0' : ''}${secs} mnt`
   }
+
+  const handleShare = async () => {
+    const shareText = `🏃 ${activity.title}
+📏 Jarak: ${activity.distance} km
+⏱ Waktu: ${formatDuration(activity.duration)}
+📈 Elevasi: ${activity.elevation_gain} m
+
+Direkam via Strava Klon 💪`
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: activity.title,
+          text: shareText,
+        })
+      } catch (err) {
+        console.log('Batal membagikan')
+      }
+    } else {
+      navigator.clipboard.writeText(shareText)
+      alert('Teks disalin ke clipboard! Silakan paste di WhatsApp/Instagram.')
+    }
+  }
+
+  if (!isOpen || !activity) return null
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
@@ -97,9 +120,14 @@ export default function DetailModal({ isOpen, onClose, activity }) {
               {new Date(activity.start_time).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             </p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 cursor-pointer p-2 rounded-full hover:bg-gray-50">
-            <X size={20} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={handleShare} className="text-gray-500 hover:text-orange-600 cursor-pointer p-2 rounded-full hover:bg-orange-50 transition-colors" title="Bagikan ke Sosmed">
+              <Share2 size={20} />
+            </button>
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-600 cursor-pointer p-2 rounded-full hover:bg-gray-50 transition-colors">
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
         {/* Konten Utama */}

@@ -23,11 +23,10 @@ export default function Auth() {
           }
         })
         if (error) throw error
-        alert('Registrasi berhasil! Silakan cek email untuk verifikasi (jika aktif).')
+        setIsRegister(false)
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
-        alert('Login berhasil!')
       }
     } catch (error) {
       alert(error.message)
