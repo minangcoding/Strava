@@ -16,6 +16,7 @@ export default function DetailModal({ isOpen, onClose, activity }) {
   const [comments, setComments] = useState([])
   const [newComment, setNewComment] = useState('')
   const [loadingComments, setLoadingComments] = useState(false)
+  const [commentsError, setCommentsError] = useState(null)
 
   useEffect(() => {
     if (isOpen && activity) {
@@ -39,13 +40,18 @@ export default function DetailModal({ isOpen, onClose, activity }) {
       
       const fetchComments = async () => {
         setLoadingComments(true)
+        setCommentsError(null)
         const { data, error } = await supabase
           .from('comments')
           .select('*')
           .eq('activity_id', activity.id)
           .order('created_at', { ascending: true })
         
-        if (!error) setComments(data || [])
+        if (error) {
+          setCommentsError(error.message)
+        } else {
+          setComments(data || [])
+        }
         setLoadingComments(false)
       }
 
@@ -209,6 +215,12 @@ export default function DetailModal({ isOpen, onClose, activity }) {
               <div className="space-y-4 mb-4 max-h-48 overflow-y-auto pr-2">
                 {loadingComments ? (
                   <p className="text-sm text-gray-500">Memuat komentar...</p>
+                ) : commentsError ? (
+                  <div className="bg-red-50 p-3 rounded-lg border border-red-200">
+                    <p className="text-xs font-bold text-red-700">Gagal memuat komentar:</p>
+                    <p className="text-xs text-red-600 font-mono mt-1">{commentsError}</p>
+                    <p className="text-[10px] text-red-500 mt-2">Mohon screenshot pesan error ini.</p>
+                  </div>
                 ) : comments.length === 0 ? (
                   <p className="text-sm text-gray-500">Belum ada komentar. Jadilah yang pertama!</p>
                 ) : (
