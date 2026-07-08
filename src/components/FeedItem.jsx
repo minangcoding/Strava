@@ -55,11 +55,17 @@ export default function FeedItem({ act, onClick, formatDuration }) {
       setHasLiked(false)
     } else {
       // Like
-      await supabase.from('kudos').insert([{ 
+      const { error } = await supabase.from('kudos').insert([{ 
         activity_id: act.id, 
         user_id: user.id,
         user_full_name: user?.user_metadata?.full_name || 'Pengguna Strava Clone'
       }])
+      
+      if (error) {
+        alert('Gagal menyukai postingan. Pastikan Anda sudah menjalankan SQL terbaru di Supabase!\nError: ' + error.message)
+        return
+      }
+      
       setLikes(p => p + 1)
       setHasLiked(true)
     }

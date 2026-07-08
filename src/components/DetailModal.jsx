@@ -41,7 +41,7 @@ export default function DetailModal({ isOpen, onClose, activity }) {
         setLoadingComments(true)
         const { data, error } = await supabase
           .from('comments')
-          .select('*, auth.users(raw_user_meta_data)') // Note: This might not work depending on Supabase setup, we'll assume they have a way or just show anonymous
+          .select('*')
           .eq('activity_id', activity.id)
           .order('created_at', { ascending: true })
         
