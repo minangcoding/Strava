@@ -240,8 +240,9 @@ export default function DetailModal({ isOpen, onClose, activity }) {
               </form>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
-  )
+  </div>
+)
 }
