@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { X, Calendar, Clock, Navigation, Send, Share2 } from 'lucide-react'
 import ActivityMap from './ActivityMap'
 import PerformanceChart from './PerformanceChart'
-import html2canvas from 'html2canvas'
+import { toBlob, toPng } from 'html-to-image'
 
 export default function DetailModal({ isOpen, onClose, activity }) {
   const { user } = useAuth()
@@ -93,39 +93,38 @@ export default function DetailModal({ isOpen, onClose, activity }) {
       // Tunggu sebentar agar tombol 'Share' disembunyikan dari DOM sebelum screenshot
       await new Promise(resolve => setTimeout(resolve, 150))
       
-      const canvas = await html2canvas(modalRef.current, {
-        useCORS: true,       // Penting untuk map Leaflet (OpenStreetMap)
-        allowTaint: true,
-        scale: 2,            // Resolusi tinggi (Retina)
+      // Menggunakan html-to-image yang lebih stabil untuk CSS modern (Tailwind v4 oklch)
+      const blob = await toBlob(modalRef.current, {
+        cacheBust: true,
+        pixelRatio: 2,
         backgroundColor: '#ffffff'
       })
       
-      canvas.toBlob(async (blob) => {
-        const file = new File([blob], `Strava-${activity.title}.png`, { type: 'image/png' })
-        
-        // Cek apakah browser HP support kirim file gambar langsung
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          try {
-            await navigator.share({
-              title: activity.title,
-              text: shareText,
-              files: [file]
-            })
-          } catch (err) {
-            console.log('Batal membagikan')
-          }
-        } else {
-          // Fallback untuk browser Laptop/PC: Langsung download gambarnya
-          const link = document.createElement('a')
-          link.download = `Strava-${activity.title}.png`
-          link.href = canvas.toDataURL('image/png')
-          link.click()
-          
-          navigator.clipboard.writeText(shareText)
-          alert('Peta dan Statistik berhasil didownload sebagai Gambar!\n\nTeks juga telah disalin ke clipboard, siap di-paste ke Instagram/WhatsApp.')
+      const file = new File([blob], `Strava-${activity.title}.png`, { type: 'image/png' })
+      
+      // Cek apakah browser HP support kirim file gambar langsung
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            title: activity.title,
+            text: shareText,
+            files: [file]
+          })
+        } catch (err) {
+          console.log('Batal membagikan')
         }
-        setIsSharing(false)
-      }, 'image/png')
+      } else {
+        // Fallback untuk browser Laptop/PC: Langsung download gambarnya
+        const dataUrl = await toPng(modalRef.current, { cacheBust: true, pixelRatio: 2, backgroundColor: '#ffffff' })
+        const link = document.createElement('a')
+        link.download = `Strava-${activity.title}.png`
+        link.href = dataUrl
+        link.click()
+        
+        navigator.clipboard.writeText(shareText)
+        alert('Peta dan Statistik berhasil didownload sebagai Gambar!\n\nTeks juga telah disalin ke clipboard, siap di-paste ke Instagram/WhatsApp.')
+      }
+      setIsSharing(false)
     } catch (err) {
       alert('Gagal membuat gambar: ' + err.message)
       setIsSharing(false)
