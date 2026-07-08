@@ -136,7 +136,7 @@ export default function DetailModal({ isOpen, onClose, activity }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
       <div className="w-full max-w-3xl rounded-2xl bg-white shadow-2xl max-h-[90vh] overflow-y-auto">
-        <div ref={modalRef} className="p-6 bg-white rounded-2xl">
+        <div className="p-6 bg-white rounded-2xl">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-gray-100 pb-4">
             <div>
@@ -174,7 +174,7 @@ export default function DetailModal({ isOpen, onClose, activity }) {
           <div className="mt-4 space-y-6">
             {/* Grid Peta & Angka Statistik */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="md:col-span-2">
+              <div className="md:col-span-2" ref={modalRef}>
                 <ActivityMap positions={routeCoordinates} />
               </div>
               
