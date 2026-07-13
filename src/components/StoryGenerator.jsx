@@ -103,60 +103,22 @@ export default function StoryGenerator({ isOpen, onClose, activity, routeCoordin
   }
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
-      <div className="flex flex-col md:flex-row gap-6 w-full max-w-4xl max-h-[90vh]">
+    <div className="fixed inset-0 z-[60] flex flex-col items-center bg-black/90 p-4 sm:p-8 backdrop-blur-md overflow-y-auto">
+      <div className="w-full max-w-md flex flex-col gap-6 pb-12 mt-4">
         
-        {/* Editor Settings (Kiri) */}
-        <div className="w-full md:w-1/3 bg-gray-900 rounded-3xl p-6 flex flex-col gap-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-white font-bold text-xl">Buat Story</h3>
-            <button onClick={onClose} className="text-gray-400 hover:text-white transition">
-              <X size={24} />
-            </button>
-          </div>
-          
-          <div className="space-y-4">
-            <label className="block">
-              <span className="text-sm text-gray-300 font-medium mb-2 block">Pilih Background Foto</span>
-              <div className="flex items-center justify-center w-full">
-                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-600 rounded-2xl cursor-pointer bg-gray-800 hover:bg-gray-700 transition">
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <ImagePlus className="w-8 h-8 text-gray-400 mb-2" />
-                    <p className="text-sm text-gray-400"><span className="font-semibold">Klik untuk unggah</span></p>
-                  </div>
-                  <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
-                </label>
-              </div>
-            </label>
-            <p className="text-xs text-gray-500 text-center">Rasio terbaik 9:16 (Mode Potrait)</p>
-          </div>
-
-          <div className="mt-auto space-y-3">
-            <button 
-              onClick={() => handleExport('share')} 
-              disabled={isExporting}
-              className="w-full flex items-center justify-center gap-2 bg-orange-600 text-white p-3 rounded-xl hover:bg-orange-500 transition font-bold disabled:opacity-50 cursor-pointer"
-            >
-              <Share2 size={20} />
-              {isExporting ? 'Memproses...' : 'Bagikan Story'}
-            </button>
-            <button 
-              onClick={() => handleExport('download')} 
-              disabled={isExporting}
-              className="w-full flex items-center justify-center gap-2 bg-gray-800 text-white p-3 rounded-xl hover:bg-gray-700 transition font-bold disabled:opacity-50 cursor-pointer border border-gray-700"
-            >
-              <Download size={20} />
-              Simpan ke Galeri
-            </button>
-          </div>
+        {/* Header */}
+        <div className="flex items-center justify-between w-full">
+           <h3 className="text-white font-bold text-2xl">Buat Story</h3>
+           <button onClick={onClose} className="text-gray-400 hover:text-white transition p-2 bg-gray-800 rounded-full">
+             <X size={20} />
+           </button>
         </div>
 
-        {/* Preview Canvas 9:16 (Kanan) */}
-        <div className="w-full md:w-2/3 flex items-center justify-center bg-gray-950 rounded-3xl p-4 overflow-hidden relative">
-          {/* Wrapper 9:16 aspect ratio */}
+        {/* Preview Canvas 9:16 */}
+        <div className="w-full flex justify-center">
           <div 
-            className="relative overflow-hidden shrink-0 shadow-2xl rounded-xl" 
-            style={{ width: '360px', height: '640px', backgroundColor: '#111827' }} 
+            className="relative overflow-hidden shadow-2xl rounded-2xl ring-4 ring-gray-800 bg-gray-900" 
+            style={{ width: '360px', height: '640px' }} 
             ref={storyRef}
           >
             {/* Background Image / Overlay */}
@@ -212,6 +174,46 @@ export default function StoryGenerator({ isOpen, onClose, activity, routeCoordin
             <div className="absolute bottom-8 left-0 right-0 flex justify-center z-10">
               <h2 className="text-2xl font-black text-white tracking-tighter drop-shadow-lg">STRAVA <span className="text-orange-500">KLON</span></h2>
             </div>
+          </div>
+        </div>
+
+        {/* Editor Settings & Buttons */}
+        <div className="w-full bg-gray-900 rounded-3xl p-6 flex flex-col gap-6 border border-gray-800">
+          <div className="space-y-4">
+            <label className="block">
+              <span className="text-sm text-gray-300 font-medium mb-3 block text-center">Pilih Foto Pemandangan / Selfie Anda</span>
+              <div className="flex items-center justify-center w-full">
+                <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-600 rounded-2xl cursor-pointer bg-gray-800 hover:bg-gray-700 transition">
+                  <div className="flex flex-col items-center justify-center pt-3 pb-3">
+                    <ImagePlus className="w-6 h-6 text-gray-400 mb-1" />
+                    <p className="text-sm text-gray-400"><span className="font-semibold">Unggah Foto</span></p>
+                  </div>
+                  <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+                </label>
+              </div>
+            </label>
+            <p className="text-[11px] text-yellow-500 text-center bg-yellow-500/10 p-2.5 rounded-xl border border-yellow-500/20 leading-relaxed">
+              💡 <b>Tips Estetik:</b> Unggah foto Anda yang sesungguhnya saat sedang lari (Selfie/Pemandangan alam). <b>Jangan mengunggah *screenshot* peta!</b>
+            </p>
+          </div>
+
+          <div className="space-y-3 pt-2">
+            <button 
+              onClick={() => handleExport('share')} 
+              disabled={isExporting}
+              className="w-full flex items-center justify-center gap-2 bg-orange-600 text-white p-3 rounded-xl hover:bg-orange-500 transition font-bold disabled:opacity-50 cursor-pointer shadow-lg shadow-orange-900/50"
+            >
+              <Share2 size={20} />
+              {isExporting ? 'Memproses...' : 'Bagikan Story Sekarang'}
+            </button>
+            <button 
+              onClick={() => handleExport('download')} 
+              disabled={isExporting}
+              className="w-full flex items-center justify-center gap-2 bg-gray-800 text-white p-3 rounded-xl hover:bg-gray-700 transition font-bold disabled:opacity-50 cursor-pointer border border-gray-700"
+            >
+              <Download size={20} />
+              Simpan ke Galeri
+            </button>
           </div>
         </div>
 
