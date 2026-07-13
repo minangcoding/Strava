@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { X, Calendar, Clock, Navigation, Send, Share2 } from 'lucide-react'
 import ActivityMap from './ActivityMap'
 import PerformanceChart from './PerformanceChart'
+import StoryGenerator from './StoryGenerator'
 import { toBlob, toPng } from 'html-to-image'
 
 export default function DetailModal({ isOpen, onClose, activity }) {
@@ -17,6 +18,7 @@ export default function DetailModal({ isOpen, onClose, activity }) {
   const [newComment, setNewComment] = useState('')
   const [loadingComments, setLoadingComments] = useState(false)
   const [commentsError, setCommentsError] = useState(null)
+  const [isStoryOpen, setIsStoryOpen] = useState(false)
 
   useEffect(() => {
     if (isOpen && activity) {
@@ -166,6 +168,9 @@ export default function DetailModal({ isOpen, onClose, activity }) {
             <div className="flex items-center gap-2">
               {!isSharing ? (
                 <>
+                  <button onClick={() => setIsStoryOpen(true)} className="text-white bg-gradient-to-r from-fuchsia-600 to-orange-500 hover:from-fuchsia-500 hover:to-orange-400 cursor-pointer px-3 py-1.5 rounded-full transition-all text-xs font-bold shadow-md hover:shadow-lg flex items-center gap-1" title="Buat Story IG/WA">
+                    Buat Story 📸
+                  </button>
                   <button onClick={handleShare} className="text-gray-500 hover:text-orange-600 cursor-pointer p-2 rounded-full hover:bg-orange-50 transition-colors" title="Bagikan ke Sosmed">
                     <Share2 size={20} />
                   </button>
@@ -265,7 +270,18 @@ export default function DetailModal({ isOpen, onClose, activity }) {
           </div>
         )}
       </div>
+
+      {/* Pop-up khusus pembuat Story */}
+      {isStoryOpen && (
+        <StoryGenerator 
+          isOpen={isStoryOpen} 
+          onClose={() => setIsStoryOpen(false)} 
+          activity={activity} 
+          routeCoordinates={routeCoordinates}
+          calculatePace={calculatePace}
+          formatDuration={formatDuration}
+        />
+      )}
     </div>
-  </div>
-)
+  )
 }
