@@ -89,11 +89,19 @@ export default function DetailModal({ isOpen, onClose, activity }) {
     return `${mins}:${secs < 10 ? '0' : ''}${secs} mnt`
   }
 
+  const calculatePace = (seconds, distance) => {
+    if (!distance || distance === 0) return "0:00"
+    const secsPerKm = seconds / distance
+    const m = Math.floor(secsPerKm / 60)
+    const s = Math.floor(secsPerKm % 60)
+    return `${m}:${s < 10 ? '0' : ''}${s}`
+  }
+
   const handleShare = async () => {
     if (!modalRef.current) return
     setIsSharing(true)
     
-    const shareText = `🏃 ${activity.title}\n📏 Jarak: ${activity.distance} km\n⏱ Waktu: ${formatDuration(activity.duration)}\n📈 Elevasi: ${activity.elevation_gain} m\n\nDirekam via Strava Klon 💪`
+    const shareText = `🏃 ${activity.title}\n📏 Jarak: ${activity.distance} km\n⚡ Pace: ${calculatePace(activity.duration, activity.distance)} /km\n⏱ Waktu: ${formatDuration(activity.duration)}\n📈 Elevasi: ${activity.elevation_gain} m\n\nDirekam via Strava Klon 💪`
     
     try {
       // Tunggu sebentar agar tombol 'Share' disembunyikan dari DOM sebelum screenshot
@@ -190,6 +198,10 @@ export default function DetailModal({ isOpen, onClose, activity }) {
                   <div>
                     <span className="text-xs text-gray-500 block font-medium">Jarak Total</span>
                     <span className="text-2xl font-black text-gray-950">{activity.distance} <span className="text-sm font-normal text-gray-500">km</span></span>
+                  </div>
+                  <div className="border-t border-gray-200 pt-3">
+                    <span className="text-xs text-gray-500 block font-medium">Pace Rata-rata</span>
+                    <span className="text-2xl font-black text-gray-950">{calculatePace(activity.duration, activity.distance)} <span className="text-sm font-normal text-gray-500">/km</span></span>
                   </div>
                   <div className="border-t border-gray-200 pt-3">
                     <span className="text-xs text-gray-500 block font-medium">Waktu Tempuh</span>

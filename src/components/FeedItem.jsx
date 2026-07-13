@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Calendar, Clock, Navigation, Heart, MessageCircle } from 'lucide-react'
+import { Calendar, Clock, Navigation, Heart, MessageCircle, Zap } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 
@@ -71,6 +71,14 @@ export default function FeedItem({ act, onClick, formatDuration }) {
     }
   }
 
+  const calculatePace = (seconds, distance) => {
+    if (!distance || distance === 0) return "0:00"
+    const secsPerKm = seconds / distance
+    const m = Math.floor(secsPerKm / 60)
+    const s = Math.floor(secsPerKm % 60)
+    return `${m}:${s < 10 ? '0' : ''}${s}`
+  }
+
   return (
     <div 
       onClick={onClick}
@@ -93,10 +101,14 @@ export default function FeedItem({ act, onClick, formatDuration }) {
         </div>
       </div>
 
-      <div className="mt-5 grid grid-cols-3 gap-2 border-t border-b border-gray-100 py-4 text-center">
+      <div className="mt-5 grid grid-cols-4 gap-2 border-t border-b border-gray-100 py-4 text-center">
         <div>
           <p className="text-[10px] font-bold text-gray-400 uppercase flex justify-center items-center gap-1"><Navigation size={12} /> Jarak</p>
           <p className="mt-1 text-lg font-black text-gray-800">{act.distance} <span className="text-xs font-normal text-gray-500">km</span></p>
+        </div>
+        <div>
+          <p className="text-[10px] font-bold text-gray-400 uppercase flex justify-center items-center gap-1"><Zap size={12} /> Pace</p>
+          <p className="mt-1 text-lg font-black text-gray-800">{calculatePace(act.duration, act.distance)} <span className="text-xs font-normal text-gray-500">/km</span></p>
         </div>
         <div>
           <p className="text-[10px] font-bold text-gray-400 uppercase flex justify-center items-center gap-1"><Clock size={12} /> Waktu</p>
