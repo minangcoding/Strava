@@ -6,6 +6,7 @@ import { LogOut, Plus, Activity, Users, User, Download } from 'lucide-react'
 import RecordModal from '../components/RecordModal'
 import DetailModal from '../components/DetailModal' 
 import FeedItem from '../components/FeedItem'
+import UserProfile from '../components/UserProfile'
 
 export default function Dashboard() {
   const { user, logout } = useAuth()
@@ -19,6 +20,7 @@ export default function Dashboard() {
   const [selectedActivity, setSelectedActivity] = useState(null)
   const [isDetailOpen, setIsDetailOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('global') 
+  const [currentView, setCurrentView] = useState('feed') // 'feed' atau 'profile'
   
   const fullName = user?.user_metadata?.full_name || 'Pelari Tangguh'
 
@@ -97,7 +99,19 @@ export default function Dashboard() {
                 <Download size={16} /> Install App
               </button>
             )}
-            <span className="text-sm font-medium text-gray-700 hidden sm:inline">Halo, {fullName}</span>
+            <button 
+              onClick={() => setCurrentView('profile')} 
+              className="flex items-center gap-2 group cursor-pointer border border-transparent hover:bg-gray-50 hover:border-gray-200 pr-3 p-1 rounded-full transition-all"
+            >
+              <img 
+                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=ea580c&color=fff&size=32&rounded=true&bold=true`} 
+                alt="Avatar" 
+                className="w-8 h-8 rounded-full shadow-sm group-hover:scale-105 transition-transform" 
+              />
+              <span className="text-sm font-bold text-gray-700 hidden sm:inline group-hover:text-orange-600 transition-colors">
+                {fullName}
+              </span>
+            </button>
             <button onClick={logout} className="flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">
               <LogOut size={16} /> Keluar
             </button>
@@ -105,7 +119,8 @@ export default function Dashboard() {
         </div>
       </nav>
 
-      <main className="mx-auto max-w-6xl px-6 py-8">
+      {currentView === 'feed' ? (
+      <main className="mx-auto max-w-6xl px-6 py-8 animate-in fade-in duration-300">
         <div className="flex items-center justify-between border-b border-gray-200 pb-5">
           <div className="flex gap-4">
             <button 
@@ -149,6 +164,19 @@ export default function Dashboard() {
           </div>
         )}
       </main>
+      ) : (
+        <UserProfile 
+          user={user} 
+          fullName={fullName} 
+          activities={activities} 
+          goBack={() => setCurrentView('feed')} 
+          onActivityClick={(act) => {
+            setSelectedActivity(act)
+            setIsDetailOpen(true)
+          }}
+          formatDuration={formatDuration}
+        />
+      )}
 
       <RecordModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onRefresh={fetchActivities} />
       
