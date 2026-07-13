@@ -283,5 +283,6 @@ export default function DetailModal({ isOpen, onClose, activity }) {
         />
       )}
     </div>
+    </div>
   )
 }
